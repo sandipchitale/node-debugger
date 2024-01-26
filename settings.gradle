@@ -9,4 +9,4 @@
  */
 
 rootProject.name = 'node-debugger'
-include('app')
+include('launch-node-debugger')

@@ -4,7 +4,6 @@
 package sandipchitale.node.debugger;
 
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,18 +16,29 @@ public class App {
 
     private void run(String[] args) {
         try {
-            Process chrome = new ProcessBuilder()
+            String chromeBinary;
+            boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+            // Locate chrome binary to invoke based on OS
+            if (isWindows) {
+                chromeBinary = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+            } else { //Unix / Linux file path
+                chromeBinary = "google-chrome";
+            }
+
+            // Launch chrome
+            Process chromeProcess = new ProcessBuilder()
                     .command(
-                            "google-chrome",
+                            chromeBinary,
                             "--incognito",
                             "--new-window",
                             "-no-first-run",
-                            "--window-size=700,450",
+                            "--window-position=100,100",
+                            "--window-size=700,600",
                             "--user-data-dir=" + Files.createTempDirectory("chrome-user-data-dir").toFile().getAbsolutePath()
                     )
                     .start();
             Robot robot = new Robot();
-            robot.delay(1000);
+            robot.delay(500);
 
             robot.keyPress(KeyEvent.VK_CONTROL);
             robot.keyPress(KeyEvent.VK_L);
@@ -36,39 +46,57 @@ public class App {
             robot.keyRelease(KeyEvent.VK_CONTROL);
 
             type(robot, "chrome");
-            robot.keyPress(KeyEvent.VK_COLON);
-            robot.keyRelease(KeyEvent.VK_COLON);
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_SEMICOLON);
+            robot.keyRelease(KeyEvent.VK_SEMICOLON);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
             type(robot, "//inspect");
 
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-            robot.delay(500);
+            robot.delay(1000);
 
+            // Show search box
             robot.keyPress(KeyEvent.VK_CONTROL);
             robot.keyPress(KeyEvent.VK_F);
             robot.keyRelease(KeyEvent.VK_F);
             robot.keyRelease(KeyEvent.VK_CONTROL);
 
+            // Search for "Open dedicated..." link on the page
             type(robot, "Open");
             robot.keyPress(KeyEvent.VK_SPACE);
             robot.keyRelease(KeyEvent.VK_SPACE);
             type(robot, "dedicated");
 
+            // Close search box
             robot.keyPress(KeyEvent.VK_ESCAPE);
             robot.keyRelease(KeyEvent.VK_ESCAPE);
 
+            // Activate "Open dedicated..." link
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-            robot.delay(20);
+            if(isWindows) {
+                robot.delay(1000);
+
+                // Switch back to launching window
+                robot.keyPress(KeyEvent.VK_ALT);
+                robot.keyPress(KeyEvent.VK_TAB);
+                robot.keyRelease(KeyEvent.VK_TAB);
+                robot.keyRelease(KeyEvent.VK_ALT);
+
+                robot.delay(1000);
+            } else { //Unix / Linux file path
+                robot.delay(20);
+            }
 
             robot.keyPress(KeyEvent.VK_CONTROL);
             robot.keyPress(KeyEvent.VK_W);
             robot.keyRelease(KeyEvent.VK_W);
             robot.keyRelease(KeyEvent.VK_CONTROL);
         } catch (IOException | AWTException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
     }
 
