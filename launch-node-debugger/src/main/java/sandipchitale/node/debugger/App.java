@@ -16,11 +16,16 @@ public class App {
 
     private void run(String[] args) {
         try {
-            String chromeBinary;
-            boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+            String os = System.getProperty("os.name").toLowerCase();
+            boolean isWindows = os.contains("win");
+            boolean isMac = os.contains("mac");
+
             // Locate chrome binary to invoke based on OS
+            String chromeBinary;
             if (isWindows) {
                 chromeBinary = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+            } if (isMac) {
+                chromeBinary = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
             } else { //Unix / Linux file path
                 chromeBinary = "google-chrome";
             }
@@ -40,10 +45,14 @@ public class App {
             Robot robot = new Robot();
             robot.delay(500);
 
-            robot.keyPress(KeyEvent.VK_CONTROL);
+            int vkControlOrCommand = KeyEvent.VK_CONTROL;
+            if (isMac) {
+                vkControlOrCommand = KeyEvent.VK_META;
+            }
+            robot.keyPress(vkControlOrCommand);
             robot.keyPress(KeyEvent.VK_L);
             robot.keyRelease(KeyEvent.VK_L);
-            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.keyRelease(vkControlOrCommand);
 
             type(robot, "chrome");
             robot.keyPress(KeyEvent.VK_SHIFT);
@@ -58,10 +67,10 @@ public class App {
             robot.delay(1000);
 
             // Show search box
-            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(vkControlOrCommand);
             robot.keyPress(KeyEvent.VK_F);
             robot.keyRelease(KeyEvent.VK_F);
-            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.keyRelease(vkControlOrCommand);
 
             // Search for "Open dedicated..." link on the page
             type(robot, "Open");
@@ -77,7 +86,7 @@ public class App {
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-            if(isWindows) {
+            if (isWindows) {
                 robot.delay(1000);
 
                 // Switch back to launching window
@@ -87,14 +96,24 @@ public class App {
                 robot.keyRelease(KeyEvent.VK_ALT);
 
                 robot.delay(1000);
-            } else { //Unix / Linux file path
+            } if (isMac) {
+                robot.delay(1000);
+
+                // Switch back to launching window
+                robot.keyPress(KeyEvent.VK_META);
+                robot.keyPress(KeyEvent.VK_BACK_QUOTE);
+                robot.keyRelease(KeyEvent.VK_BACK_QUOTE);
+                robot.keyRelease(KeyEvent.VK_META);
+
+                robot.delay(1000);
+            } else { // Linux
                 robot.delay(20);
             }
 
-            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(vkControlOrCommand);
             robot.keyPress(KeyEvent.VK_W);
             robot.keyRelease(KeyEvent.VK_W);
-            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.keyRelease(vkControlOrCommand);
         } catch (IOException | AWTException e) {
             System.err.println(e.getMessage());
         }
